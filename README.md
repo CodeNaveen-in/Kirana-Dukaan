@@ -19,6 +19,7 @@ It helps beginners and intermediate developers understand important concepts in 
 
 
 ## 🚀 Getting Started
+Type this into your command line where you want to copy the folder.
    ```bash
    git clone https://github.com/CodeNaveen-in/Kirana-Dukaan.git
    cd Kirana-Dukaan
