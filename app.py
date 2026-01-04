@@ -1,12 +1,25 @@
-from flask import Flask, render_template
+from flask import Flask
+from models import db
+from routes import main
+from config import DevelopmentConfig # Import your config class
 
-app = Flask(__name__)
+def create_app(config_class=DevelopmentConfig):
+    app = Flask(__name__)
+    
+    # Load configuration from the class
+    app.config.from_object(config_class)
 
-import config
+    # Initialize extensions
+    db.init_app(app)
 
-import models
+    # Register Blueprints
+    app.register_blueprint(main)
 
-import routes
+    with app.app_context():
+        db.create_all()
+
+    return app
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app = create_app()
+    app.run()
