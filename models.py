@@ -8,6 +8,7 @@ class User(db.Model):
     username = db.Column(db.String(32), unique=True)
     passhash = db.Column(db.String(256), nullable=False)
     name = db.Column(db.String(64), nullable=True)
+    email = db.Column(db.String(120), unique=True, nullable=True)
     is_admin = db.Column(db.Boolean, nullable=False, default=False)
 
 class Category(db.Model):
