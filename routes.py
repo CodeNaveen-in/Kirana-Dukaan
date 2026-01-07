@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, url_for, request, redirect, flash
+from flask import Blueprint, render_template, url_for, request, redirect, flash, session
 from models import db, User, Category
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -17,6 +17,21 @@ def home():
 def login():
     return render_template('login.html')
 
+@main.route('/login', methods=["POST"])
+def login_post():
+    username = request.form.get('username')
+    password = request.form.get('password')
+
+    user = User.query.filter_by(username=username).first()
+
+    if not user or not check_password_hash(user.passhash, password):
+        flash('Please check your login details and try again.', 'danger')
+        return redirect(url_for('main.login'))
+
+    session['user_id'] = user.id
+    flash('You have successfully logged in!', 'success')
+    return redirect(url_for('main.index'))
+
 @main.route('/register')
 def register():
     return render_template('register.html')
@@ -30,23 +45,24 @@ def register_post():
     confirm_password = request.form.get('confirm_password')
 
     if (not username or not email or not password or not confirm_password):
-        flash('Please fill in the important Fields')
+        flash('Please fill in the important fields', 'danger')
         return redirect(url_for('main.register'))
     
     if (password != confirm_password):
-        flash('Passwords do not match')
+        flash('Passwords do not match', 'danger')
         return redirect(url_for('main.register'))
     
     user = User.query.filter_by(username=username).first()
 
     if user:
-        flash('Username already exists')
+        flash('Username already exists', 'warning')
         return redirect(url_for('main.register'))
     
     passhash = generate_password_hash(password)
     new_user = User(username=username, passhash=passhash, name=name, email=email)
     db.session.add(new_user)
     db.session.commit()
+    flash('Registration successful. Please log in.', 'success')
     return redirect(url_for('main.login'))
 
 

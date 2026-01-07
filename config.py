@@ -6,7 +6,8 @@ load_dotenv()
 
 class Config:
     """Base configuration."""
-    SECRET_KEY = os.getenv('SECRET_KEY')
+    # Provide a development fallback if SECRET_KEY is not set in the environment
+    SECRET_KEY = os.getenv('SECRET_KEY') or 'dev-secret-key'
     SQLALCHEMY_TRACK_MODIFICATIONS = os.getenv('SQLALCHEMY_TRACK_MODIFICATIONS') == 'True'
     # Add other universal settings here
 
