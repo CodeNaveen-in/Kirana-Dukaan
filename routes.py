@@ -7,7 +7,11 @@ main = Blueprint('main', __name__)
 
 @main.route('/')
 def index():
-    return render_template("index.html", name="Naveen")
+    if ('user_id' in session):
+        return render_template("index.html", name="Naveen")
+    else:
+        flash('Please log in to access the homepage.', 'warning')
+        return redirect(url_for('main.login'))
 
 @main.route('/home')
 def home():
@@ -28,7 +32,9 @@ def login_post():
         flash('Please check your login details and try again.', 'danger')
         return redirect(url_for('main.login'))
 
-    session['user_id'] = user.id
+    # Meant to create an user session and store it, you can store anything we are storing user id 
+    session['user_id'] = user.id 
+    
     flash('You have successfully logged in!', 'success')
     return redirect(url_for('main.index'))
 

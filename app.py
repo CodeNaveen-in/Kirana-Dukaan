@@ -1,5 +1,5 @@
 from flask import Flask
-from models import db
+from models import User, db
 from routes import main
 from config import DevelopmentConfig # Import your config class
 
@@ -17,7 +17,7 @@ def create_app(config_class=DevelopmentConfig):
 
     with app.app_context():
         db.create_all()
-
+        User.ensure_admin_exists()
     return app
 
 if __name__ == "__main__":
