@@ -1,0 +1,75 @@
+{% extends 'layout.html' %}
+
+{% block title %}My Profile - Kirana Dukaan{% endblock %}
+
+{% block content %}
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body text-center">
+                <img src="https://ui-avatars.com/api/?name={{ user.name }}&background=random"
+                    class="rounded-circle mb-3" alt="Profile Picture">
+                <h3 class="card-title">{{ user.name }}</h3>
+                <p class="text-muted">@{{ user.username }}</p>
+
+                {% if user.is_admin %}
+                <span class="badge bg-danger">Administrator</span>
+                {% else %}
+                <span class="badge bg-primary">Customer</span>
+                {% endif %}
+                <hr>
+                <div class="text-start">
+                    <p><strong>Email:</strong> {{ user.email or 'Not provided' }}</p>
+                    <p><strong>Member Since:</strong> Account Active</p>
+                </div>
+                <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger btn-sm w-100 mt-3">Logout</a>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mt-4 mb-4">
+            <div class="card-body">
+                <form action="" method="post">
+                    <h4 class="card-title text-center mb-4">Change Details </h4>
+                    <hr>
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label"><strong>Username</strong></label>
+                        <input type="text" name="username" id="username" value="{{user.username}}" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="cpassword" class="form-label"><strong>Current Password</strong></label>
+                        <input type="password" name="cpassword" id="cpassword" class="form-control" placeholder="Required to save changes" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label"><strong>New Password</strong></label>
+                        <input type="password" name="password" id="password" class="form-control" placeholder="Leave blank to keep current">
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="name" class="form-label"><strong>Full Name</strong></label>
+                        <input type="text" name="name" id="name" value="{{user.name}}" class="form-control">
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div> <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0">Recent Activity</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted text-center py-5">
+                    Your order history will appear here once you start shopping!
+                </p>
+                <div class="d-grid">
+                    <a href="{{ url_for('main.home') }}" class="btn btn-success">Start Shopping</a>
+                </div>
+            </div>
+        </div>
+    </div> </div> {% endblock %}
