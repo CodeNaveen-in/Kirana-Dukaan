@@ -11,6 +11,7 @@ class User(db.Model):
     name = db.Column(db.String(64), nullable=True)
     email = db.Column(db.String(120), unique=True, nullable=True)
     is_admin = db.Column(db.Boolean, nullable=False, default=False)
+    transactions = db.relationship('Transaction', backref='user', lazy=True)
 
     # 1. ADMIN CHECK: A helper property to easily check roles in routes
     @property
@@ -52,6 +53,8 @@ class Product(db.Model):
     # category = db.relationship('Category', backref=db.backref('products', lazy=True))
     quantity = db.Column(db.Integer, nullable=False)
     man_date = db.Column(db.Date, nullable=False)
+    cart_items = db.relationship('Cart', backref='product', lazy=True)
+    orders = db.relationship('Order', backref='product', lazy=True)
 
 class Cart(db.Model):
     id = db.Column(db.Integer, primary_key=True)
