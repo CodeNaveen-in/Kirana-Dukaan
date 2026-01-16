@@ -1,6 +1,7 @@
 from flask import Flask
 from models import User, db
 from routes import main
+from api import api
 from config import DevelopmentConfig # Import your config class
 
 def create_app(config_class=DevelopmentConfig):
@@ -14,6 +15,7 @@ def create_app(config_class=DevelopmentConfig):
 
     # Register Blueprints
     app.register_blueprint(main)
+    app.register_blueprint(api, url_prefix='/api')
 
     with app.app_context():
         db.create_all()
