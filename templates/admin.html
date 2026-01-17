@@ -231,7 +231,7 @@
                                             <td>{{ transaction.user.username if transaction.user else 'N/A' }}</td>
                                             <td>{{ transaction.datetime.strftime('%Y-%m-%d %H:%M') }}</td>
                                             <td>{{ transaction.orders|length }}</td>
-                                            <td>₹{{ "%.2f"|format(transaction.orders|sum(attribute='price')) }}</td>
+                                            <td>₹{{ "%.2f"|format(transaction.orders|sum(attribute='quantity') * (transaction.orders[0].price if transaction.orders else 0)) }}</td>
                                         </tr>
                                         {% endfor %}
                                     {% else %}
@@ -242,7 +242,7 @@
                                 </tbody>
                             </table>
                         </div>
-                        <a href="#" class="btn btn-info mt-3">View All Transactions</a>
+                        <a href="{{ url_for('main.admin_transactions') }}" class="btn btn-info mt-3">View All Transactions</a>
                     </div>
                 </div>
             </div>

@@ -11,6 +11,14 @@
         <li class="nav-item">
           <a class="nav-link" href="{{ url_for('main.index') }}">Home</a>
         </li>
+        {% if user and not user.is_admin %}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('main.search') }}">Search</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('main.cart') }}">Cart</a>
+        </li>
+        {% endif %}
         <li class="nav-item">
           <a class="nav-link" href="{{ url_for('main.profile') }}">My Profile</a>
         </li>

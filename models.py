@@ -50,7 +50,7 @@ class Product(db.Model):
     price = db.Column(db.Integer, nullable=False)
     description = db.Column(db.String(256), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
-    # category = db.relationship('Category', backref=db.backref('products', lazy=True))
+    # category relationship is defined via backref in Category model
     quantity = db.Column(db.Integer, nullable=False)
     man_date = db.Column(db.Date, nullable=False)
     cart_items = db.relationship('Cart', backref='product', lazy=True)
@@ -61,6 +61,8 @@ class Cart(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
+    user = db.relationship('User', backref='cart_items', lazy=True)
+    # product relationship is already defined in Product model with backref='product'
 
 class Transaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)

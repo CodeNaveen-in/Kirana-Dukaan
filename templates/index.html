@@ -1,8 +1,109 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-    <h1>Kirana Dukaan</h1>
+    <h1>Welcome to Kirana Dukaan</h1>
     <p>We welcome you to our supermarket, we hope you eat fresh and healthy.</p>
     <br>
-    <p>We wish you luck Mr. {{ name }}</p>
+    <p>Hello Mr. {{ name }}!</p>
+
+    <!-- Search and Filter Section -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <form method="get" action="{{ url_for('main.index') }}" class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="q" placeholder="Search products..." value="{{ query }}">
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" name="category">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" {% if category_filter == category.id|string %}selected{% endif %}>{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <input type="number" class="form-control" name="min_price" placeholder="Min Price" value="{{ min_price }}" min="0" step="0.01">
+                </div>
+                <div class="col-md-2">
+                    <input type="number" class="form-control" name="max_price" placeholder="Max Price" value="{{ max_price }}" min="0" step="0.01">
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary w-100" type="submit">Filter</button>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-4">
+            {% if query or category_filter or min_price or max_price %}
+            <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Clear Filters</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Categories Overview -->
+    <h2>Categories</h2>
+    <div class="row mb-4">
+        {% for category in categories %}
+        <div class="col-md-3 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ category.name }}</h5>
+                    <p class="card-text">{{ category.products|length }} products available</p>
+                    <a href="{{ url_for('main.index', category=category.id) }}" class="btn btn-outline-primary btn-sm">View Products</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Products Section -->
+    <h2 class="mt-4">Products</h2>
+    {% if query or category_filter or min_price or max_price %}
+        <div class="alert alert-info">
+            <strong>Active Filters:</strong>
+            {% if query %}Search: "{{ query }}" {% endif %}
+            {% if category_filter %}
+                {% for cat in categories %}
+                    {% if cat.id|string == category_filter %}Category: {{ cat.name }}{% endif %}
+                {% endfor %}
+            {% endif %}
+            {% if min_price %}Min Price: ₹{{ min_price }}{% endif %}
+            {% if max_price %}Max Price: ₹{{ max_price }}{% endif %}
+        </div>
+    {% endif %}
+
+    {% if products_by_category %}
+        {% for category, products in products_by_category.items() %}
+        <div class="category-section mb-5">
+            <h3 class="category-title">{{ category.name }}</h3>
+            <div class="row">
+                {% for product in products %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="card-text">{{ product.description }}</p>
+                            <p class="card-text"><strong>Price: ₹{{ product.price }}</strong></p>
+                            <p class="card-text">Stock: {{ product.quantity }}</p>
+                            <form action="{{ url_for('main.add_to_cart', product_id=product.id) }}" method="post" class="mt-auto">
+                                <div class="input-group mb-2">
+                                    <span class="input-group-text">Qty</span>
+                                    <input type="number" class="form-control" name="quantity" value="1" min="1" max="{{ product.quantity }}">
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100" {% if product.quantity == 0 %}disabled{% endif %}>
+                                    {% if product.quantity == 0 %}Out of Stock{% else %}Add to Cart{% endif %}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-warning">
+            <h4>No products found</h4>
+            <p>Try adjusting your search criteria or <a href="{{ url_for('main.index') }}">clear all filters</a>.</p>
+        </div>
+    {% endif %}
 {% endblock %}

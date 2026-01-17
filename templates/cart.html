@@ -1,0 +1,53 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <h1>Your Cart</h1>
+
+    {% if cart_items %}
+        <div class="row">
+            <div class="col-md-8">
+                {% for item in cart_items %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h5 class="card-title">{{ item.product.name }}</h5>
+                                <p class="card-text">{{ item.product.description }}</p>
+                                <p class="card-text">Price: ₹{{ item.product.price }}</p>
+                                <p class="card-text">Category: {{ item.product.category.name }}</p>
+                            </div>
+                            <div class="col-md-4">
+                                <form action="{{ url_for('main.update_cart', cart_id=item.id) }}" method="post" class="d-inline">
+                                    <div class="input-group mb-2">
+                                        <span class="input-group-text">Qty</span>
+                                        <input type="number" class="form-control" name="quantity" value="{{ item.quantity }}" min="0" max="{{ item.product.quantity }}">
+                                        <button class="btn btn-outline-secondary" type="submit">Update</button>
+                                    </div>
+                                </form>
+                                <form action="{{ url_for('main.remove_from_cart', cart_id=item.id) }}" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                </form>
+                                <p class="mt-2"><strong>Subtotal: ₹{{ item.quantity * item.product.price }}</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Order Summary</h5>
+                        <p class="card-text">Total Items: {{ cart_items|length }}</p>
+                        <p class="card-text"><strong>Total: ₹{{ total }}</strong></p>
+                        <form action="{{ url_for('main.buy') }}" method="post">
+                            <button type="submit" class="btn btn-success w-100">Buy Now</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <p>Your cart is empty. <a href="{{ url_for('main.index') }}">Continue shopping</a>.</p>
+    {% endif %}
+{% endblock %}

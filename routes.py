@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, url_for, request, redirect, flash, session
-from models import db, User, Category, Product, Transaction
+from models import db, User, Category, Product, Transaction, Cart, Order
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from datetime import datetime
@@ -19,8 +19,53 @@ def index():
         if user and user.is_admin:
             return redirect(url_for('main.admin'))
         
-        # 4. Otherwise, show them the standard homepage
-        return render_template("index.html", name=user.name)
+        # 4. Otherwise, show them the standard homepage with products and categories
+        categories = Category.query.all()
+        
+        # Handle search and filter queries
+        query = request.args.get('q', '')
+        category_filter = request.args.get('category', '')
+        min_price = request.args.get('min_price', '')
+        max_price = request.args.get('max_price', '')
+        
+        # Base query
+        products_query = Product.query
+        
+        # Apply search filter
+        if query:
+            products_query = products_query.filter(
+                (Product.name.contains(query)) | (Product.description.contains(query))
+            )
+        
+        # Apply category filter
+        if category_filter:
+            products_query = products_query.filter(Product.category_id == category_filter)
+        
+        # Apply price filters
+        if min_price:
+            try:
+                min_price_val = float(min_price)
+                products_query = products_query.filter(Product.price >= min_price_val)
+            except ValueError:
+                pass
+        
+        if max_price:
+            try:
+                max_price_val = float(max_price)
+                products_query = products_query.filter(Product.price <= max_price_val)
+            except ValueError:
+                pass
+        
+        products = products_query.all()
+        
+        # Group products by category for display
+        products_by_category = {}
+        for category in categories:
+            category_products = [p for p in products if p.category_id == category.id]
+            if category_products:  # Only include categories that have products
+                products_by_category[category] = category_products
+        
+        return render_template("index.html", name=user.name, user=user, categories=categories, products_by_category=products_by_category, query=query, category_filter=category_filter, min_price=min_price, max_price=max_price)
 
     # 5. If not logged in at all, send to login
     flash('Please log in to access the store.', 'warning')
@@ -102,7 +147,9 @@ def auth_required(f):
 def profile():
     user_id = session['user_id']
     user = User.query.get(user_id)
-    return render_template('profile.html', user=user)
+    # Fetch transactions with orders for the user
+    transactions = Transaction.query.filter_by(user_id=user_id).order_by(Transaction.datetime.desc()).all()
+    return render_template('profile.html', user=user, transactions=transactions)
 
 @main.route("/profile", methods=["POST"])
 @auth_required
@@ -142,6 +189,158 @@ def logout():
     flash("You have been logged out.", "info")
     return redirect(url_for('main.login'))
 
+# USER PRODUCT ROUTES
+
+@main.route('/search')
+@auth_required
+def search():
+    user_id = session['user_id']
+    user = User.query.get(user_id)
+    categories = Category.query.all()
+    
+    # Handle search and filter queries
+    query = request.args.get('q', '')
+    category_filter = request.args.get('category', '')
+    min_price = request.args.get('min_price', '')
+    max_price = request.args.get('max_price', '')
+    
+    # Base query
+    products_query = Product.query
+    
+    # Apply search filter
+    if query:
+        products_query = products_query.filter(
+            (Product.name.contains(query)) | (Product.description.contains(query))
+        )
+    
+    # Apply category filter
+    if category_filter:
+        products_query = products_query.filter(Product.category_id == category_filter)
+    
+    # Apply price filters
+    if min_price:
+        try:
+            min_price_val = float(min_price)
+            products_query = products_query.filter(Product.price >= min_price_val)
+        except ValueError:
+            pass
+    
+    if max_price:
+        try:
+            max_price_val = float(max_price)
+            products_query = products_query.filter(Product.price <= max_price_val)
+        except ValueError:
+            pass
+    
+    products = products_query.all()
+    
+    return render_template('searchbar.html', user=user, products=products, categories=categories, query=query, category_filter=category_filter, min_price=min_price, max_price=max_price)
+
+@main.route('/add_to_cart/<int:product_id>', methods=['POST'])
+@auth_required
+def add_to_cart(product_id):
+    user_id = session['user_id']
+    quantity = int(request.form.get('quantity', 1))
+    
+    product = Product.query.get_or_404(product_id)
+    if quantity > product.quantity:
+        flash('Not enough stock available.', 'danger')
+        return redirect(url_for('main.index'))
+    
+    # Check if item already in cart
+    cart_item = Cart.query.filter_by(user_id=user_id, product_id=product_id).first()
+    if cart_item:
+        cart_item.quantity += quantity
+    else:
+        cart_item = Cart(user_id=user_id, product_id=product_id, quantity=quantity)
+        db.session.add(cart_item)
+    
+    db.session.commit()
+    flash('Product added to cart!', 'success')
+    return redirect(url_for('main.index'))
+
+@main.route('/cart')
+@auth_required
+def cart():
+    user_id = session['user_id']
+    user = User.query.get(user_id)
+    cart_items = Cart.query.filter_by(user_id=user_id).all()
+    total = sum(item.quantity * item.product.price for item in cart_items)
+    return render_template('cart.html', user=user, cart_items=cart_items, total=total)
+
+@main.route('/update_cart/<int:cart_id>', methods=['POST'])
+@auth_required
+def update_cart(cart_id):
+    cart_item = Cart.query.get_or_404(cart_id)
+    if cart_item.user_id != session['user_id']:
+        flash('Access denied.', 'danger')
+        return redirect(url_for('main.cart'))
+    
+    quantity = int(request.form.get('quantity', 1))
+    if quantity <= 0:
+        db.session.delete(cart_item)
+        db.session.commit()
+        flash('Item removed from cart.', 'info')
+    else:
+        if quantity > cart_item.product.quantity:
+            flash('Not enough stock available.', 'danger')
+            return redirect(url_for('main.cart'))
+        cart_item.quantity = quantity
+        db.session.commit()
+        flash('Cart updated.', 'success')
+    
+    return redirect(url_for('main.cart'))
+
+@main.route('/remove_from_cart/<int:cart_id>', methods=['POST'])
+@auth_required
+def remove_from_cart(cart_id):
+    cart_item = Cart.query.get_or_404(cart_id)
+    if cart_item.user_id != session['user_id']:
+        flash('Access denied.', 'danger')
+        return redirect(url_for('main.cart'))
+    
+    db.session.delete(cart_item)
+    db.session.commit()
+    flash('Item removed from cart.', 'info')
+    return redirect(url_for('main.cart'))
+
+@main.route('/buy', methods=['POST'])
+@auth_required
+def buy():
+    user_id = session['user_id']
+    cart_items = Cart.query.filter_by(user_id=user_id).all()
+    
+    if not cart_items:
+        flash('Your cart is empty.', 'warning')
+        return redirect(url_for('main.cart'))
+    
+    # Check stock availability
+    for item in cart_items:
+        if item.quantity > item.product.quantity:
+            flash(f'Not enough stock for {item.product.name}.', 'danger')
+            return redirect(url_for('main.cart'))
+    
+    # Create transaction
+    transaction = Transaction(user_id=user_id, datetime=datetime.now())
+    db.session.add(transaction)
+    db.session.commit()
+    
+    # Create orders and update stock
+    for item in cart_items:
+        order = Order(
+            transaction_id=transaction.id,
+            product_id=item.product_id,
+            quantity=item.quantity,
+            price=item.product.price
+        )
+        db.session.add(order)
+        item.product.quantity -= item.quantity
+        db.session.delete(item)
+    
+    db.session.commit()
+    flash('Purchase successful!', 'success')
+    return redirect(url_for('main.index'))
+
 # ADMIN PAGES
 def admin_required(f):
     @wraps(f)
@@ -159,11 +358,13 @@ def admin_required(f):
 @main.route('/admin')
 @admin_required
 def admin():
+    user_id = session['user_id']
+    user = User.query.get(user_id)
     users = User.query.limit(5).all()
     products = Product.query.limit(5).all()
     categories = Category.query.limit(5).all()
     transactions = Transaction.query.order_by(Transaction.datetime.desc()).limit(5).all()
-    return render_template('admin.html', users=users, products=products, categories=categories, transactions=transactions)
+    return render_template('admin.html', user=user, users=users, products=products, categories=categories, transactions=transactions)
 
 # Category Management Routes
 
@@ -382,3 +583,13 @@ def admin_delete_user(user_id):
     db.session.commit()
     flash('User deleted successfully.', 'success')
     return redirect(url_for('main.admin_users'))
+
+# Transaction Management Routes
+
+@main.route('/admin/transactions')
+@admin_required
+def admin_transactions():
+    user_id = session['user_id']
+    user = User.query.get(user_id)
+    transactions = Transaction.query.order_by(Transaction.datetime.desc()).all()
+    return render_template('admin_transactions.html', user=user, transactions=transactions)

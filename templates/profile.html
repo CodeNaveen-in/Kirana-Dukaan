@@ -61,15 +61,56 @@
     </div> <div class="col-md-8">
         <div class="card shadow-sm">
             <div class="card-header bg-white py-3">
-                <h5 class="mb-0">Recent Activity</h5>
+                <h5 class="mb-0">Order History</h5>
             </div>
             <div class="card-body">
-                <p class="text-muted text-center py-5">
-                    Your order history will appear here once you start shopping!
-                </p>
-                <div class="d-grid">
-                    <a href="{{ url_for('main.home') }}" class="btn btn-success">Start Shopping</a>
-                </div>
+                {% if transactions %}
+                    {% for transaction in transactions %}
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <strong>Order #{{ transaction.id }}</strong> - {{ transaction.datetime.strftime('%Y-%m-%d %H:%M') }}
+                            <span class="badge bg-success float-end">Completed</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Quantity</th>
+                                            <th>Price</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for order in transaction.orders %}
+                                        <tr>
+                                            <td>{{ order.product.name }}</td>
+                                            <td>{{ order.quantity }}</td>
+                                            <td>₹{{ order.price }}</td>
+                                            <td>₹{{ order.quantity * order.price }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th colspan="3">Order Total:</th>
+                                            <th>₹{{ "%.2f"|format(transaction.orders|sum(attribute='quantity') * (transaction.orders[0].price if transaction.orders else 0)) }}</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center py-5">
+                        Your order history will appear here once you start shopping!
+                    </p>
+                    <div class="d-grid">
+                        <a href="{{ url_for('main.index') }}" class="btn btn-success">Start Shopping</a>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div> </div> {% endblock %}
