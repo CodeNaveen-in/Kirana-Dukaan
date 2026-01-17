@@ -9,77 +9,87 @@
             <div class="card-body text-center">
                 <img src="https://ui-avatars.com/api/?name={{ user.name }}&background=random"
                     class="rounded-circle mb-3" alt="Profile Picture">
-                <h3 class="card-title">{{ user.name }}</h3>
-                <p class="text-muted">@{{ user.username }}</p>
+                <h3 class="card-title"><i class="fas fa-user-circle me-2"></i>{{ user.name }}</h3>
+                <p class="text-muted"><i class="fas fa-at me-1"></i>@{{ user.username }}</p>
 
                 {% if user.is_admin %}
-                <span class="badge bg-danger">Administrator</span>
+                <span class="badge bg-danger"><i class="fas fa-crown me-1"></i>Administrator</span>
                 {% else %}
-                <span class="badge bg-primary">Customer</span>
+                <span class="badge bg-primary"><i class="fas fa-user me-1"></i>Customer</span>
                 {% endif %}
                 <hr>
                 <div class="text-start">
-                    <p><strong>Email:</strong> {{ user.email or 'Not provided' }}</p>
-                    <p><strong>Member Since:</strong> Account Active</p>
+                    <p><i class="fas fa-envelope me-1"></i><strong>Email:</strong> {{ user.email or 'Not provided' }}</p>
+                    <p><i class="fas fa-calendar-alt me-1"></i><strong>Member Since:</strong> Account Active</p>
                 </div>
-                <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger btn-sm w-100 mt-3">Logout</a>
+                <a href="{{ url_for('main.logout') }}" class="btn btn-outline-danger btn-sm w-100 mt-3"><i class="fas fa-sign-out-alt me-1"></i>Logout</a>
             </div>
         </div>
 
         <div class="card shadow-sm mt-4 mb-4">
             <div class="card-body">
                 <form action="" method="post">
-                    <h4 class="card-title text-center mb-4">Change Details </h4>
+                    <h4 class="card-title text-center mb-4"><i class="fas fa-edit me-2"></i>Change Details</h4>
                     <hr>
 
                     <div class="mb-3">
-                        <label for="username" class="form-label"><strong>Username</strong></label>
+                        <label for="username" class="form-label"><i class="fas fa-user me-1"></i><strong>Username</strong></label>
                         <input type="text" name="username" id="username" value="{{user.username}}" class="form-control" required>
                     </div>
 
                     <div class="mb-3">
-                        <label for="cpassword" class="form-label"><strong>Current Password</strong></label>
+                        <label for="cpassword" class="form-label"><i class="fas fa-lock me-1"></i><strong>Current Password</strong></label>
                         <input type="password" name="cpassword" id="cpassword" class="form-control" placeholder="Required to save changes" required>
                     </div>
 
                     <div class="mb-3">
-                        <label for="password" class="form-label"><strong>New Password</strong></label>
+                        <label for="password" class="form-label"><i class="fas fa-key me-1"></i><strong>New Password</strong></label>
                         <input type="password" name="password" id="password" class="form-control" placeholder="Leave blank to keep current">
                     </div>
 
                     <div class="mb-4">
-                        <label for="name" class="form-label"><strong>Full Name</strong></label>
+                        <label for="name" class="form-label"><i class="fas fa-id-card me-1"></i><strong>Full Name</strong></label>
                         <input type="text" name="name" id="name" value="{{user.name}}" class="form-control">
                     </div>
 
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Update Profile</button>
                     </div>
                 </form>
             </div>
         </div>
     </div> <div class="col-md-8">
         <div class="card shadow-sm">
-            <div class="card-header bg-white py-3">
-                <h5 class="mb-0">Order History</h5>
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-history me-2"></i>Order History</h5>
+                {% if transactions %}
+                <div class="btn-group" role="group">
+                    <button onclick="window.print()" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                    <a href="{{ url_for('main.export_transactions_csv') }}" class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-download"></i> Export CSV
+                    </a>
+                </div>
+                {% endif %}
             </div>
             <div class="card-body">
                 {% if transactions %}
                     {% for transaction in transactions %}
                     <div class="card mb-3">
                         <div class="card-header">
-                            <strong>Order #{{ transaction.id }}</strong> - {{ transaction.datetime.strftime('%Y-%m-%d %H:%M') }}
-                            <span class="badge bg-success float-end">Completed</span>
+                            <strong><i class="fas fa-receipt me-1"></i>Order #{{ transaction.id }}</strong> - <i class="fas fa-calendar me-1"></i>{{ transaction.datetime.strftime('%Y-%m-%d %H:%M') }}
+                            <span class="badge bg-success float-end"><i class="fas fa-check-circle me-1"></i>Completed</span>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
                                 <table class="table table-sm">
                                     <thead>
                                         <tr>
-                                            <th>Product</th>
-                                            <th>Quantity</th>
-                                            <th>Price</th>
-                                            <th>Total</th>
+                                            <th><i class="fas fa-cube me-1"></i>Product</th>
+                                            <th><i class="fas fa-hashtag me-1"></i>Quantity</th>
+                                            <th><i class="fas fa-rupee-sign me-1"></i>Price</th>
+                                            <th><i class="fas fa-calculator me-1"></i>Total</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -94,7 +104,7 @@
                                     </tbody>
                                     <tfoot>
                                         <tr>
-                                            <th colspan="3">Order Total:</th>
+                                            <th colspan="3"><i class="fas fa-shopping-bag me-1"></i>Order Total:</th>
                                             <th>₹{{ "%.2f"|format(transaction.orders|sum(attribute='quantity') * (transaction.orders[0].price if transaction.orders else 0)) }}</th>
                                         </tr>
                                     </tfoot>
@@ -105,10 +115,11 @@
                     {% endfor %}
                 {% else %}
                     <p class="text-muted text-center py-5">
+                        <i class="fas fa-shopping-cart fa-3x mb-3 text-muted"></i><br>
                         Your order history will appear here once you start shopping!
                     </p>
                     <div class="d-grid">
-                        <a href="{{ url_for('main.index') }}" class="btn btn-success">Start Shopping</a>
+                        <a href="{{ url_for('main.index') }}" class="btn btn-success"><i class="fas fa-shopping-bag me-1"></i>Start Shopping</a>
                     </div>
                 {% endif %}
             </div>

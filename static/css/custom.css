@@ -274,3 +274,80 @@
 ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
 }
+
+/* Print Styles */
+@media print {
+    body {
+        background: white !important;
+    }
+    
+    .container {
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .row {
+        display: block !important;
+    }
+    
+    .col-md-4, .col-md-8 {
+        display: block !important;
+        width: 100% !important;
+    }
+    
+    .card {
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+        margin-bottom: 20px;
+        break-inside: avoid;
+    }
+    
+    .btn, .btn-group, .card-header .btn-group, .navbar, .card.shadow-sm.mt-4.mb-4 {
+        display: none !important;
+    }
+    
+    .badge {
+        border: 1px solid #000;
+        background: white !important;
+        color: black !important;
+    }
+    
+    .table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-bottom: 20px;
+    }
+    
+    .table th, .table td {
+        border: 1px solid #000;
+        padding: 8px;
+        text-align: left;
+    }
+    
+    .table th {
+        background: #f8f9fa !important;
+        font-weight: bold;
+    }
+    
+    .card-header {
+        background: white !important;
+        color: black !important;
+        border-bottom: 1px solid #000;
+        font-weight: bold;
+        padding: 10px;
+    }
+    
+    .card-body {
+        padding: 15px;
+    }
+    
+    h5.card-title {
+        color: black !important;
+        margin-bottom: 15px;
+    }
+    
+    .card.mb-3 {
+        page-break-inside: avoid;
+    }
+}

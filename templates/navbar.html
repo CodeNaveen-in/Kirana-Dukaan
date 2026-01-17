@@ -9,28 +9,42 @@
       <ul class="navbar-nav ms-auto">
         {% if session.get('user_id') %}
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('main.index') }}">Home</a>
+          <a class="nav-link" href="{{ url_for('main.index') }}">
+            <i class="fas fa-home me-1"></i>Home
+          </a>
         </li>
         {% if user and not user.is_admin %}
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('main.search') }}">Search</a>
+          <a class="nav-link" href="{{ url_for('main.search') }}">
+            <i class="fas fa-search me-1"></i>Search
+          </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('main.cart') }}">Cart</a>
+          <a class="nav-link" href="{{ url_for('main.cart') }}">
+            <i class="fas fa-shopping-cart me-1"></i>Cart
+          </a>
         </li>
         {% endif %}
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('main.profile') }}">My Profile</a>
+          <a class="nav-link" href="{{ url_for('main.profile') }}">
+            <i class="fas fa-user me-1"></i>My Profile
+          </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-danger" href="{{ url_for('main.logout') }}">Logout</a>
+          <a class="nav-link text-danger" href="{{ url_for('main.logout') }}">
+            <i class="fas fa-sign-out-alt me-1"></i>Logout
+          </a>
         </li>
         {% else %}
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('main.login') }}">Login</a>
+          <a class="nav-link" href="{{ url_for('main.login') }}">
+            <i class="fas fa-sign-in-alt me-1"></i>Login
+          </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('main.register') }}">Register</a>
+          <a class="nav-link" href="{{ url_for('main.register') }}">
+            <i class="fas fa-user-plus me-1"></i>Register
+          </a>
         </li>
         {% endif %}
       </ul>

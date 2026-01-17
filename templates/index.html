@@ -1,54 +1,72 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-    <h1>Welcome to Kirana Dukaan</h1>
-    <p>We welcome you to our supermarket, we hope you eat fresh and healthy.</p>
+    <h1><i class="fas fa-store me-3"></i>Welcome to Kirana Dukaan</h1>
+    <p><i class="fas fa-leaf me-1"></i>We welcome you to our supermarket, we hope you eat fresh and healthy.</p>
     <br>
-    <p>Hello Mr. {{ name }}!</p>
+    <p><i class="fas fa-user-circle me-1"></i>Hello Mr. {{ name }}!</p>
 
     <!-- Search and Filter Section -->
     <div class="row mb-4">
         <div class="col-md-8">
             <form method="get" action="{{ url_for('main.index') }}" class="row g-3">
                 <div class="col-md-4">
-                    <input type="text" class="form-control" name="q" placeholder="Search products..." value="{{ query }}">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" name="q" placeholder="Search products..." value="{{ query }}">
+                    </div>
                 </div>
                 <div class="col-md-2">
-                    <select class="form-select" name="category">
-                        <option value="">All Categories</option>
-                        {% for category in categories %}
-                        <option value="{{ category.id }}" {% if category_filter == category.id|string %}selected{% endif %}>{{ category.name }}</option>
-                        {% endfor %}
-                    </select>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-tags"></i></span>
+                        <select class="form-select" name="category">
+                            <option value="">All Categories</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}" {% if category_filter == category.id|string %}selected{% endif %}>{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                 </div>
                 <div class="col-md-2">
-                    <input type="number" class="form-control" name="min_price" placeholder="Min Price" value="{{ min_price }}" min="0" step="0.01">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-rupee-sign"></i></span>
+                        <input type="number" class="form-control" name="min_price" placeholder="Min Price" value="{{ min_price }}" min="0" step="0.01">
+                    </div>
                 </div>
                 <div class="col-md-2">
-                    <input type="number" class="form-control" name="max_price" placeholder="Max Price" value="{{ max_price }}" min="0" step="0.01">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-rupee-sign"></i></span>
+                        <input type="number" class="form-control" name="max_price" placeholder="Max Price" value="{{ max_price }}" min="0" step="0.01">
+                    </div>
                 </div>
                 <div class="col-md-2">
-                    <button class="btn btn-primary w-100" type="submit">Filter</button>
+                    <button class="btn btn-primary w-100" type="submit">
+                        <i class="fas fa-filter me-1"></i>Filter
+                    </button>
                 </div>
             </form>
         </div>
         <div class="col-md-4">
             {% if query or category_filter or min_price or max_price %}
-            <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Clear Filters</a>
+            <a href="{{ url_for('main.index') }}" class="btn btn-secondary">
+                <i class="fas fa-times me-1"></i>Clear Filters
+            </a>
             {% endif %}
         </div>
     </div>
 
     <!-- Categories Overview -->
-    <h2>Categories</h2>
+    <h2><i class="fas fa-th-large me-2"></i>Categories</h2>
     <div class="row mb-4">
         {% for category in categories %}
         <div class="col-md-3 mb-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">{{ category.name }}</h5>
-                    <p class="card-text">{{ category.products|length }} products available</p>
-                    <a href="{{ url_for('main.index', category=category.id) }}" class="btn btn-outline-primary btn-sm">View Products</a>
+            <div class="card h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title"><i class="fas fa-tag me-2"></i>{{ category.name }}</h5>
+                    <p class="card-text"><i class="fas fa-boxes me-1"></i>{{ category.products|length }} products available</p>
+                    <a href="{{ url_for('main.index', category=category.id) }}" class="btn btn-outline-primary btn-sm mt-auto">
+                        <i class="fas fa-eye me-1"></i>View Products
+                    </a>
                 </div>
             </div>
         </div>
@@ -74,23 +92,23 @@
     {% if products_by_category %}
         {% for category, products in products_by_category.items() %}
         <div class="category-section mb-5">
-            <h3 class="category-title">{{ category.name }}</h3>
+            <h3 class="category-title"><i class="fas fa-folder-open me-2"></i>{{ category.name }}</h3>
             <div class="row">
                 {% for product in products %}
                 <div class="col-md-4 mb-4">
                     <div class="card h-100">
                         <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">{{ product.name }}</h5>
+                            <h5 class="card-title"><i class="fas fa-cube me-2"></i>{{ product.name }}</h5>
                             <p class="card-text">{{ product.description }}</p>
-                            <p class="card-text"><strong>Price: ₹{{ product.price }}</strong></p>
-                            <p class="card-text">Stock: {{ product.quantity }}</p>
+                            <p class="card-text"><strong><i class="fas fa-rupee-sign me-1"></i>Price: ₹{{ product.price }}</strong></p>
+                            <p class="card-text"><i class="fas fa-box me-1"></i>Stock: {{ product.quantity }}</p>
                             <form action="{{ url_for('main.add_to_cart', product_id=product.id) }}" method="post" class="mt-auto">
                                 <div class="input-group mb-2">
-                                    <span class="input-group-text">Qty</span>
+                                    <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
                                     <input type="number" class="form-control" name="quantity" value="1" min="1" max="{{ product.quantity }}">
                                 </div>
                                 <button type="submit" class="btn btn-primary w-100" {% if product.quantity == 0 %}disabled{% endif %}>
-                                    {% if product.quantity == 0 %}Out of Stock{% else %}Add to Cart{% endif %}
+                                    {% if product.quantity == 0 %}<i class="fas fa-times-circle me-1"></i>Out of Stock{% else %}<i class="fas fa-cart-plus me-1"></i>Add to Cart{% endif %}
                                 </button>
                             </form>
                         </div>
@@ -102,8 +120,8 @@
         {% endfor %}
     {% else %}
         <div class="alert alert-warning">
-            <h4>No products found</h4>
-            <p>Try adjusting your search criteria or <a href="{{ url_for('main.index') }}">clear all filters</a>.</p>
+            <h4><i class="fas fa-exclamation-triangle me-2"></i>No products found</h4>
+            <p>Try adjusting your search criteria or <a href="{{ url_for('main.index') }}"><i class="fas fa-times me-1"></i>clear all filters</a>.</p>
         </div>
     {% endif %}
 {% endblock %}

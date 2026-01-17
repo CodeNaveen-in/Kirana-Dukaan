@@ -1,8 +1,10 @@
-from flask import Blueprint, render_template, url_for, request, redirect, flash, session
+from flask import Blueprint, render_template, url_for, request, redirect, flash, session, Response
 from models import db, User, Category, Product, Transaction, Cart, Order
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 from datetime import datetime
+import csv
+import io
 
 # Create a Blueprint object
 main = Blueprint('main', __name__)
@@ -181,6 +183,44 @@ def profile_edit():
     db.session.commit()
     flash('Profile updated successfully', 'success')
     return redirect(url_for('main.profile'))
+
+@main.route('/export_transactions_csv')
+@auth_required
+def export_transactions_csv():
+    user_id = session['user_id']
+    user = User.query.get(user_id)
+    transactions = Transaction.query.filter_by(user_id=user_id).order_by(Transaction.datetime.desc()).all()
+    
+    # Create CSV data
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Write header
+    writer.writerow(['Transaction ID', 'Date & Time', 'Product Name', 'Quantity', 'Unit Price', 'Total Price'])
+    
+    # Write transaction data
+    for transaction in transactions:
+        for order in transaction.orders:
+            writer.writerow([
+                transaction.id,
+                transaction.datetime.strftime('%Y-%m-%d %H:%M:%S'),
+                order.product.name,
+                order.quantity,
+                f"{order.price:.2f}",
+                f"{order.quantity * order.price:.2f}"
+            ])
+    
+    # Create response
+    output.seek(0)
+    response = Response(
+        output.getvalue(),
+        mimetype='text/csv',
+        headers={
+            'Content-Disposition': f'attachment; filename={user.username}_transactions.csv'
+        }
+    )
+    
+    return response
 
 @main.route("/logout")
 @auth_required
